@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Design Attribute Visual Gallery — iOS-optimised</title>
+<style>
+  :root { --bg:#f6f6f7; --ink:#141416; --muted:#5f6368; --border:#e6e6ea; --btn:#fff; --btn-active:#141416; --btn-active-ink:#fff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width: 1600px; margin: 0 auto; }
+  header { padding: 20px 24px 8px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:6px 0 0; color:var(--muted); }
+
+  /* Filters (no backdrop-filter: it can crash iOS on some devices) */
+  .filters { position: sticky; top: 0; z-index: 20; background: #f6f6f7; padding:12px 24px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+  .groups { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .label { font-size:12px; color:var(--muted); margin-right:8px; }
+  .btn { appearance:none; border:1px solid var(--border); background:var(--btn); color:#111; padding:8px 14px; border-radius:999px; cursor:pointer; font-size:14px; }
+  .btn[data-active="true"] { background:var(--btn-active); color:var(--btn-active-ink); border-color:var(--btn-active); }
+  .btn.reset { background:#fff; border-color:#d0d7de; }
+
+  /* Single viewport with double-buffer iframes */
+  .stage { position: relative; height: 72vh; margin:16px 24px 24px; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .layer { position:absolute; inset:0; transition: opacity 350ms ease; }
+  .layer iframe { width:100%; height:100%; border:0; display:block; }
+  .hidden { opacity:0; pointer-events:none; }
+  .visible { opacity:1; pointer-events:auto; }
+
+  .controls { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; pointer-events:none; z-index:2; }
+  .controls .nav { pointer-events:auto; display:flex; gap:8px; }
+  .controls button { background:rgba(20,20,22,0.7); color:#fff; border:0; border-radius:999px; width:42px; height:42px; cursor:pointer; font-size:18px; display:grid; place-items:center; }
+  .controls .left { margin-left:12px; }
+  .controls .right { margin-right:12px; }
+
+  .hud { position:absolute; bottom:12px; left:12px; right:12px; display:flex; align-items:center; justify-content:space-between; pointer-events:none; z-index:2; }
+  .hud .meta { background:rgba(255,255,255,0.92); border:1px solid var(--border); border-radius:10px; padding:6px 10px; color:#111; font-size:13px; pointer-events:auto; }
+  .hud .toggles { display:flex; gap:8px; pointer-events:auto; }
+  .hud .toggles button { background:rgba(255,255,255,0.92); border:1px solid var(--border); border-radius:999px; padding:6px 10px; cursor:pointer; }
+
+  .track { display:flex; gap:6px; overflow:auto; padding:0 24px 24px; margin-top:-4px; }
+  .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+  .pill.active { background:#141416; color:#fff; border-color:#141416; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Design Attribute Visual Gallery — iOS-optimised</h1>
+      <p>Loads one panorama at a time to avoid iOS reload loops. Filters, pills, prev/next, and autoplay included.</p>
+    </header>
+
+    <div class="filters" id="filters">
+      <div class="filters-row">
+        <div class="groups">
+          <div class="group" data-group="scale">
+            <span class="label">Scale</span>
+            <button class="btn" data-value="all" data-active="true">all</button>
+            <button class="btn" data-value="Scale_Low">Scale_Low</button>
+            <button class="btn" data-value="Scale_High">Scale_High</button>
+          </div>
+          <div class="group" data-group="visibility">
+            <span class="label">Visibility</span>
+            <button class="btn" data-value="all" data-active="true">all</button>
+            <button class="btn" data-value="Vi_Low">Vi_Low</button>
+            <button class="btn" data-value="Vi_High">Vi_High</button>
+          </div>
+          <div class="group" data-group="fi">
+            <span class="label">FI</span>
+            <button class="btn" data-value="all" data-active="true">all</button>
+            <button class="btn" data-value="FI_Low">FI_Low</button>
+            <button class="btn" data-value="FI_Med">FI_Med</button>
+            <button class="btn" data-value="FI_High">FI_High</button>
+          </div>
+        </div>
+        <div class="actions"><button id="resetBtn" class="btn reset">Reset</button></div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <!-- double-buffer layers -->
+      <div class="layer visible" id="layerA">
+        <iframe id="iframeA"
+          allow="fullscreen; accelerometer; gyroscope; magnetometer"
+          allowfullscreen webkitallowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="layer hidden" id="layerB">
+        <iframe id="iframeB"
+          allow="fullscreen; accelerometer; gyroscope; magnetometer"
+          allowfullscreen webkitallowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+
+      <div class="controls">
+        <div class="nav left"><button id="prevBtn" aria-label="Previous">◀</button></div>
+        <div class="nav right"><button id="nextBtn" aria-label="Next">▶</button></div>
+      </div>
+      <div class="hud">
+        <div class="meta" id="meta">0 / 0</div>
+        <div class="toggles">
+          <button id="autoBtn" aria-pressed="false" title="Toggle autoplay">Autoplay</button>
+          <a id="openLink" class="meta" href="#" target="_blank" rel="noreferrer">Open ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="track" id="track"></div>
+  </div>
+
+<script>
+/* ----- Data: IDs, attributes, URLs (Set ON) ----- */
+const DATA = [
+  { id:"0",  title:"0 · Clean base image",                     scale:"—",         visibility:"—",      fi:"—",       url:"https://momento360.com/e/u/da4801de5f83491793e2251d91cebc11?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"1",  title:"1 · Scale_Low · Vi_Low · FI_Low",          scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/657c7111f8bb4a12a37edc1722f94fbf?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"2",  title:"2 · Scale_Low · Vi_Low · FI_Med",          scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/657336baafb745a4bbfcb1dcc13366ba?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"3",  title:"3 · Scale_Low · Vi_Low · FI_High",         scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High",url:"https://momento360.com/e/u/1adf4d6e4a0443168707f222ea158166?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"4",  title:"4 · Scale_Low · Vi_High · FI_Low",         scale:"Scale_Low", visibility:"Vi_High",fi:"FI_Low", url:"https://momento360.com/e/u/1aa49d2225d04fdfa3159402de5bcff7?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"5",  title:"5 · Scale_Low · Vi_High · FI_Med",         scale:"Scale_Low", visibility:"Vi_High",fi:"FI_Med", url:"https://momento360.com/e/u/cde18ae1e7244f77a7c251a8062beb2f?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"6",  title:"6 · Scale_Low · Vi_High · FI_High",        scale:"Scale_Low", visibility:"Vi_High",fi:"FI_High",url:"https://momento360.com/e/u/50bc2df44f1b430d8d5f81016b28deb6?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"7",  title:"7 · Scale_High · Vi_Low · FI_Low",         scale:"Scale_High",visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/f094e3a582ad4d13b155b841a5537300?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"8",  title:"8 · Scale_High · Vi_Low · FI_Med",         scale:"Scale_High",visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/3166a8b7446241d8ac71951ae2c37591?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"9",  title:"9 · Scale_High · Vi_Low · FI_High",        scale:"Scale_High",visibility:"Vi_Low", fi:"FI_High",url:"https://momento360.com/e/u/c7e912e4f166443d9328359041d3f748?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"10", title:"10 · Scale_High · Vi_High · FI_Low",       scale:"Scale_High",visibility:"Vi_High",fi:"FI_Low", url:"https://momento360.com/e/u/eb480219ca6049e2a34dd879e7262e87?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"11", title:"11 · Scale_High · Vi_High · FI_Med",       scale:"Scale_High",visibility:"Vi_High",fi:"FI_Med", url:"https://momento360.com/e/u/1ca550b7f7804e91b49048bb51a9e001?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"12", title:"12 · Scale_High · Vi_High · FI_High",      scale:"Scale_High",visibility:"Vi_High",fi:"FI_High",url:"https://momento360.com/e/u/f18871496a694661b04e77a8a5a9c375?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" }
+];
+
+/* ----- State + helpers ----- */
+const state = { scale:'all', visibility:'all', fi:'all', idx:0, autoplay:false, timer:null, front:'A' };
+const layerA = document.getElementById('layerA');
+const layerB = document.getElementById('layerB');
+const iframeA = document.getElementById('iframeA');
+const iframeB = document.getElementById('iframeB');
+const track   = document.getElementById('track');
+const meta    = document.getElementById('meta');
+const openLink= document.getElementById('openLink');
+const autoBtn = document.getElementById('autoBtn');
+
+function setGroupActive(groupEl, value){ groupEl.querySelectorAll('.btn').forEach(b=>b.dataset.active='false'); const btn=groupEl.querySelector(`.btn[data-value="${value}"]`); if(btn) btn.dataset.active='true'; }
+function resetAll(){ state.scale='all'; state.visibility='all'; state.fi='all'; document.querySelectorAll('.group').forEach(g=>setGroupActive(g,'all')); build(); goTo(0); window.scrollTo({top:0, behavior:'smooth'}); }
+function matches(item,key){ const want=state[key]; return want==='all' || item[key]===want; }
+function current(){ return DATA.filter(it=>matches(it,'scale') && matches(it,'visibility') && matches(it,'fi')); }
+
+function buildTrack(list){
+  track.innerHTML='';
+  list.forEach((it,i)=>{
+    const b=document.createElement('button');
+    b.className='pill'+(i===state.idx?' active':'');
+    b.textContent=it.id; b.title=it.title;
+    b.onclick=()=>{ stopAutoplay(); goTo(i); };
+    track.appendChild(b);
+  });
+}
+
+/* load into back layer, then swap, and blank the old one (frees memory on iOS) */
+function loadInto(which,url,thenShow){
+  const frame = (which==='A')?iframeA:iframeB;
+  frame.src = url;
+  frame.onload = ()=>{ thenShow && thenShow(); };
+}
+function show(which){
+  if(which==='A'){ layerA.className='layer visible'; layerB.className='layer hidden'; iframeB.src='about:blank'; }
+  else            { layerB.className='layer visible'; layerA.className='layer hidden'; iframeA.src='about:blank'; }
+  state.front = which;
+}
+
+function goTo(i){ state.idx=i; updateHud(); transitionTo(current()[state.idx]?.url); }
+function transitionTo(url){
+  if(!url) return;
+  const nextLayer = state.front==='A' ? 'B' : 'A';
+  loadInto(nextLayer, url, ()=>show(nextLayer));
+}
+function updateHud(){
+  const list = current();
+  if(!list.length){ meta.textContent='0 / 0'; openLink.href='#'; return; }
+  meta.textContent = `${state.idx+1} / ${list.length} — ${list[state.idx].title}`;
+  openLink.href = list[state.idx].url;
+  document.querySelectorAll('.pill').forEach((el,i)=>el.classList.toggle('active', i===state.idx));
+}
+
+function prev(){ const l=current(); if(!l.length) return; state.idx=(state.idx-1+l.length)%l.length; updateHud(); transitionTo(l[state.idx].url); }
+function next(){ const l=current(); if(!l.length) return; state.idx=(state.idx+1)%l.length; updateHud(); transitionTo(l[state.idx].url); }
+
+/* Controls */
+document.getElementById('prevBtn').addEventListener('click', ()=>{ stopAutoplay(); prev(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ stopAutoplay(); next(); });
+window.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft'){ stopAutoplay(); prev(); } if(e.key==='ArrowRight'){ stopAutoplay(); next(); } });
+
+document.querySelectorAll('.group').forEach(g=>{
+  g.addEventListener('click', e=>{
+    const btn=e.target.closest('.btn'); if(!btn) return;
+    setGroupActive(g, btn.dataset.value);
+    state[g.dataset.group] = btn.dataset.value;
+    const all = state.scale==='all' && state.visibility==='all' && state.fi==='all';
+    if(all) resetAll(); else { build(); goTo(0); document.getElementById('filters').scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
+});
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+function startAutoplay(){ stopAutoplay(); state.autoplay=true; autoBtn.setAttribute('aria-pressed','true'); state.timer=setInterval(next,5000); }
+function stopAutoplay(){ state.autoplay=false; autoBtn.setAttribute('aria-pressed','false'); if(state.timer){ clearInterval(state.timer); state.timer=null; } }
+autoBtn.addEventListener('click', ()=>{ state.autoplay ? stopAutoplay() : startAutoplay(); });
+
+function build(){ const list=current(); buildTrack(list); updateHud(); }
+
+/* Init */
+build(); goTo(0);
+</script>
+</body>
+</html>
