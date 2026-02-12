@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Design Scenario_ON</title>
+  <title>Panoramic Design Scenarios for Old Neighbourhood Typology</title>
   <style>
     :root {
       --bg:#f6f6f7; --ink:#141416; --muted:#5f6368; --border:#e6e6ea;
@@ -21,7 +21,7 @@
     .filters { position: sticky; top: 0; z-index: 20;
       background: rgba(246,246,247,0.9); backdrop-filter: blur(6px);
       padding: 12px 24px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-    .filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+    .filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-start; justify-content:space-between; }
     .groups { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
     .group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .label { font-size:12px; color:var(--muted); margin-right:8px; }
@@ -32,10 +32,13 @@
     .btn.reset { background:#fff; border-color:#d0d7de; }
     .btn.reset:hover { background:#f1f3f5; }
 
+    /* NEW: baseline row */
+    .baseline-row { width:100%; display:flex; gap:12px; align-items:center; margin-top:10px; }
+
     .stage { position: relative; height: 72vh; margin: 16px 0 24px; background:#fff; border:1px solid var(--border); overflow: hidden; }
     .slides { position:absolute; inset:0; z-index:1; }
     .slide { position:absolute; inset:0; opacity:0; transition: opacity 400ms ease; pointer-events: none; }
-    .slide.active { opacity:1; pointer-events: auto; } /* only active slide captures pointer events */
+    .slide.active { opacity:1; pointer-events: auto; }
     .slide iframe { width:100%; height:100%; border:0; display:block; }
 
     .controls { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; pointer-events:none; z-index:2; }
@@ -57,7 +60,7 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Design Scenario_ON</h1>
+      <h1>Panoramic Design Scenarios for Old Neighbourhood Typology</h1>
       <p>Drag within the panorama to explore.</p>
     </header>
 
@@ -66,26 +69,34 @@
         <div class="groups">
           <div class="group" data-group="scale">
             <span class="label">Scale</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
+            <!-- REMOVED: all/Baseline button here -->
             <button class="btn" data-value="Scale_Low">Scale_Low</button>
             <button class="btn" data-value="Scale_High">Scale_High</button>
           </div>
+
           <div class="group" data-group="visibility">
             <span class="label">Visibility</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
-            <button class="btn" data-value="Vi_Low">Vi_Low</button>
-            <button class="btn" data-value="Vi_High">Vi_High</button>
+            <!-- REMOVED: all/Baseline button here -->
+            <button class="btn" data-value="Vi_Low">Aesthetic_Blended</button>
+            <button class="btn" data-value="Vi_High">Aesthetic_Distinct</button>
           </div>
+
           <div class="group" data-group="fi">
             <span class="label">FI</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
-            <button class="btn" data-value="FI_Low">FI_Low</button>
-            <button class="btn" data-value="FI_Med">FI_Med</button>
-            <button class="btn" data-value="FI_High">FI_High</button>
+            <!-- REMOVED: all/Baseline button here -->
+            <button class="btn" data-value="FI_Low">CommEmbed_Low</button>
+            <button class="btn" data-value="FI_Med">CommEmbed_Med</button>
+            <button class="btn" data-value="FI_High">CommEmbed_High</button>
           </div>
         </div>
+
+        <!-- NEW: single Baseline button on its own line, after CommEmbed buttons -->
+        <div class="baseline-row">
+          <button id="baselineBtn" class="btn reset" title="Set filters to Baseline (All/All/All)">Baseline</button>
+        </div>
+
         <div class="actions">
-          <button id="resetBtn" class="btn reset" title="Reset filters to All/All/All">Reset</button>
+          <button id="resetBtn" class="btn reset" title="Reset filters to Baseline (All/All/All)">Reset</button>
         </div>
       </div>
     </div>
@@ -125,20 +136,21 @@
       "12": "https://momento360.com/e/u/f18871496a694661b04e77a8a5a9c375?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true"
     };
 
+    // UPDATED TITLES (labels)
     const DATA = [
-      { id: "0", title: "0 · Clean base image", scale:"—", visibility:"—", fi:"—" },
-      { id: "1", title: "1 · Scale_Low · Vi_Low · FI_Low", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low" },
-      { id: "2", title: "2 · Scale_Low · Vi_Low · FI_Med", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med" },
-      { id: "3", title: "3 · Scale_Low · Vi_Low · FI_High", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High" },
-      { id: "4", title: "4 · Scale_Low · Vi_High · FI_Low", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Low" },
-      { id: "5", title: "5 · Scale_Low · Vi_High · FI_Med", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Med" },
-      { id: "6", title: "6 · Scale_Low · Vi_High · FI_High", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_High" },
-      { id: "7", title: "7 · Scale_High · Vi_Low · FI_Low", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Low" },
-      { id: "8", title: "8 · Scale_High · Vi_Low · FI_Med", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Med" },
-      { id: "9", title: "9 · Scale_High · Vi_Low · FI_High", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_High" },
-      { id: "10", title: "10 · Scale_High · Vi_High · FI_Low", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Low" },
-      { id: "11", title: "11 · Scale_High · Vi_High · FI_Med", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Med" },
-      { id: "12", title: "12 · Scale_High · Vi_High · FI_High", scale:"Scale_High", visibility:"Vi_High", fi:"FI_High" }
+      { id: "0", title: "0 · Baseline", scale:"—", visibility:"—", fi:"—" },
+      { id: "1", title: "1 · Scale_Low · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low" },
+      { id: "2", title: "2 · Scale_Low · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med" },
+      { id: "3", title: "3 · Scale_Low · Aesthetic_Blended · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High" },
+      { id: "4", title: "4 · Scale_Low · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Low" },
+      { id: "5", title: "5 · Scale_Low · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Med" },
+      { id: "6", title: "6 · Scale_Low · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_High" },
+      { id: "7", title: "7 · Scale_High · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Low" },
+      { id: "8", title: "8 · Scale_High · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Med" },
+      { id: "9", title: "9 · Scale_High · Aesthetic_Blended · CommEmbed_High", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_High" },
+      { id: "10", title: "10 · Scale_High · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Low" },
+      { id: "11", title: "11 · Scale_High · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Med" },
+      { id: "12", title: "12 · Scale_High · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_High", visibility:"Vi_High", fi:"FI_High" }
     ].map(it => ({...it, url: URLS[it.id]}));
 
     const state = { scale: 'all', visibility: 'all', fi: 'all', idx: 0, autoplay: false, timer: null };
@@ -154,9 +166,13 @@
       if (btn) btn.dataset.active = 'true';
     }
 
+    function clearActives() {
+      document.querySelectorAll('.group').forEach(g => g.querySelectorAll('.btn').forEach(b => b.dataset.active = 'false'));
+    }
+
     function resetAll() {
       state.scale = 'all'; state.visibility = 'all'; state.fi = 'all';
-      document.querySelectorAll('.group').forEach(g => setGroupActive(g, 'all'));
+      clearActives(); // since we removed the per-group "all" buttons
       buildPlaylist();
       goTo(0);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -224,21 +240,9 @@
       document.querySelectorAll('.pill').forEach((el, i) => el.classList.toggle('active', i === state.idx));
     }
 
-    function goTo(i) {
-      state.idx = i;
-      updateHud();
-    }
-
-    function prev() {
-      const list = currentPlaylist(); if (!list.length) return;
-      state.idx = (state.idx - 1 + list.length) % list.length;
-      updateHud();
-    }
-    function next() {
-      const list = currentPlaylist(); if (!list.length) return;
-      state.idx = (state.idx + 1) % list.length;
-      updateHud();
-    }
+    function goTo(i) { state.idx = i; updateHud(); }
+    function prev() { const list = currentPlaylist(); if (!list.length) return; state.idx = (state.idx - 1 + list.length) % list.length; updateHud(); }
+    function next() { const list = currentPlaylist(); if (!list.length) return; state.idx = (state.idx + 1) % list.length; updateHud(); }
 
     document.getElementById('prevBtn').addEventListener('click', () => { stopAutoplay(); prev(); });
     document.getElementById('nextBtn').addEventListener('click', () => { stopAutoplay(); next(); });
@@ -251,20 +255,21 @@
       g.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn');
         if (!btn) return;
+
         setGroupActive(g, btn.dataset.value);
         state[g.dataset.group] = btn.dataset.value;
-        const all = state.scale === 'all' && state.visibility === 'all' && state.fi === 'all';
-        if (all) {
-          resetAll();
-        } else {
-          buildPlaylist();
-          goTo(0);
-          document.getElementById('filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+
+        buildPlaylist();
+        goTo(0);
+        document.getElementById('filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
 
-    document.getElementById('resetBtn').addEventListener('click', () => { resetAll(); });
+    // NEW: single Baseline button
+    document.getElementById('baselineBtn').addEventListener('click', resetAll);
+
+    // Reset behaves same as Baseline now
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
 
     function startAutoplay() {
       stopAutoplay();
@@ -277,9 +282,7 @@
       autoBtn.setAttribute('aria-pressed', 'false');
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
     }
-    autoBtn.addEventListener('click', () => {
-      if (state.autoplay) stopAutoplay(); else startAutoplay();
-    });
+    autoBtn.addEventListener('click', () => { if (state.autoplay) stopAutoplay(); else startAutoplay(); });
 
     buildPlaylist();
     goTo(0);
