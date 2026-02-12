@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- ✅ TITLE CHANGE -->
 <title>Panoramic Design Scenarios for Old Neighbourhood Typology</title>
 
 <style>
@@ -15,15 +17,13 @@
   header p { margin:6px 0 0; color:var(--muted); }
 
   .filters { position: sticky; top:0; z-index:20; background:#f6f6f7; padding:12px 24px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-  .filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-start; justify-content:space-between; }
+  .filters-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
   .groups { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
   .group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
   .label { font-size:12px; color:var(--muted); margin-right:8px; }
   .btn { appearance:none; border:1px solid var(--border); background:var(--btn); color:#111; padding:8px 14px; border-radius:999px; cursor:pointer; font-size:14px; }
   .btn[data-active="true"] { background:var(--btn-active); color:var(--btn-active-ink); border-color:var(--btn-active); }
   .btn.reset { background:#fff; border-color:#d0d7de; }
-
-  .baseline-row { width:100%; margin-top:10px; }
 
   .stage { position: relative; height: 72vh; margin:16px 24px 24px; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
   .frame-wrap { position:absolute; inset:0; }
@@ -39,6 +39,8 @@
 
   .hud { position:absolute; bottom:12px; left:12px; right:12px; display:flex; align-items:center; justify-content:space-between; pointer-events:none; z-index:2; }
   .hud .meta { background:rgba(255,255,255,0.92); border:1px solid var(--border); border-radius:10px; padding:6px 10px; color:#111; font-size:13px; pointer-events:auto; }
+  .hud .toggles { display:flex; gap:8px; pointer-events:auto; }
+  .hud .toggles button { background:rgba(255,255,255,0.92); border:1px solid var(--border); border-radius:999px; padding:6px 10px; cursor:pointer; }
 
   .track { display:flex; gap:6px; overflow:auto; padding:0 24px 24px; margin-top:-4px; }
   .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#fff; cursor:pointer; }
@@ -46,129 +48,174 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+  <div class="wrap">
+    <header>
+      <!-- ✅ TITLE CHANGE -->
+      <h1>Panoramic Design Scenarios for Old Neighbourhood Typology</h1>
+      <p>Drag within the panorama to explore</p>
+    </header>
 
-<header>
-  <h1>Panoramic Design Scenarios for Old Neighbourhood Typology</h1>
-  <p>Drag within the panorama to explore</p>
-</header>
+    <div class="filters" id="filters">
+      <div class="filters-row">
+        <div class="groups">
+          <div class="group" data-group="scale">
+            <span class="label">Scale</span>
 
-<div class="filters" id="filters">
-  <div class="filters-row">
-    <div class="groups">
+            <!-- ✅ BUTTON CHANGE: removed per-group "all" -->
+            <button class="btn" data-value="Scale_Low">Scale_Low</button>
+            <button class="btn" data-value="Scale_High">Scale_High</button>
+          </div>
 
-      <div class="group" data-group="scale">
-        <span class="label">Scale</span>
-        <button class="btn" data-value="Scale_Low">Scale_Low</button>
-        <button class="btn" data-value="Scale_High">Scale_High</button>
+          <div class="group" data-group="visibility">
+            <span class="label">Visibility</span>
+
+            <!-- ✅ LABEL CHANGE (buttons) -->
+            <button class="btn" data-value="Vi_Low">Aesthetic_Blended</button>
+            <button class="btn" data-value="Vi_High">Aesthetic_Distinct</button>
+          </div>
+
+          <div class="group" data-group="fi">
+            <span class="label">FI</span>
+
+            <!-- ✅ LABEL CHANGE (buttons) -->
+            <button class="btn" data-value="FI_Low">CommEmbed_Low</button>
+            <button class="btn" data-value="FI_Med">CommEmbed_Med</button>
+            <button class="btn" data-value="FI_High">CommEmbed_High</button>
+          </div>
+        </div>
+
+        <!-- ✅ BUTTON CHANGE: single Baseline button on its own line, after CommEmbed -->
+        <div style="width:100%; display:flex; justify-content:flex-start; margin-top:10px;">
+          <button id="baselineBtn" class="btn reset" title="Set filters to Baseline (All/All/All)">Baseline</button>
+        </div>
+
+        <div class="actions"><button id="resetBtn" class="btn reset">Reset</button></div>
       </div>
-
-      <div class="group" data-group="visibility">
-        <span class="label">Visibility</span>
-        <button class="btn" data-value="Vi_Low">Aesthetic_Blended</button>
-        <button class="btn" data-value="Vi_High">Aesthetic_Distinct</button>
-      </div>
-
-      <div class="group" data-group="fi">
-        <span class="label">FI</span>
-        <button class="btn" data-value="FI_Low">CommEmbed_Low</button>
-        <button class="btn" data-value="FI_Med">CommEmbed_Med</button>
-        <button class="btn" data-value="FI_High">CommEmbed_High</button>
-      </div>
-
     </div>
 
-    <div class="baseline-row">
-      <button id="baselineBtn" class="btn reset">Baseline</button>
+    <div class="stage">
+      <div class="frame-wrap">
+        <iframe id="pano" allow="fullscreen; accelerometer; gyroscope; magnetometer"
+          allowfullscreen webkitallowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="controls">
+        <div class="nav left"><button id="prevBtn" aria-label="Previous">◀</button></div>
+        <div class="nav right"><button id="nextBtn" aria-label="Next">▶</button></div>
+      </div>
+      <div class="hud">
+        <div class="meta" id="meta">0 / 0</div>
+        <div class="toggles">
+          <button id="autoBtn" aria-pressed="false" title="Toggle autoplay">Autoplay</button>
+          <a id="openLink" class="meta" href="#" target="_blank" rel="noreferrer">Open ↗</a>
+        </div>
+      </div>
     </div>
 
-    <div class="actions">
-      <button id="resetBtn" class="btn reset">Reset</button>
-    </div>
+    <div class="track" id="track"></div>
   </div>
-</div>
-
-<div class="stage">
-  <div class="frame-wrap">
-    <iframe id="pano" allowfullscreen></iframe>
-  </div>
-  <div class="controls">
-    <div class="nav left"><button id="prevBtn">◀</button></div>
-    <div class="nav right"><button id="nextBtn">▶</button></div>
-  </div>
-  <div class="hud">
-    <div class="meta" id="meta">0 / 0</div>
-  </div>
-</div>
-
-<div class="track" id="track"></div>
-</div>
 
 <script>
-
 const DATA = [
-  { id:"0", title:"0 · Baseline", scale:"—", visibility:"—", fi:"—", url:"https://momento360.com/e/u/da4801de5f83491793e2251d91cebc11?..." },
-  { id:"1", title:"1 · Scale_Low · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/657c7111f8bb4a12a37edc1722f94fbf?..." },
-  { id:"2", title:"2 · Scale_Low · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/657336baafb745a4bbfcb1dcc13366ba?..." },
-  { id:"3", title:"3 · Scale_Low · Aesthetic_Blended · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High", url:"https://momento360.com/e/u/1adf4d6e4a0443168707f222ea158166?..." },
-  { id:"4", title:"4 · Scale_Low · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Low", url:"https://momento360.com/e/u/1aa49d2225d04fdfa3159402de5bcff7?..." },
-  { id:"5", title:"5 · Scale_Low · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Med", url:"https://momento360.com/e/u/cde18ae1e7244f77a7c251a8062beb2f?..." },
-  { id:"6", title:"6 · Scale_Low · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_High", url:"https://momento360.com/e/u/50bc2df44f1b430d8d5f81016b28deb6?..." },
-  { id:"7", title:"7 · Scale_High · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/f094e3a582ad4d13b155b841a5537300?..." },
-  { id:"8", title:"8 · Scale_High · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/3166a8b7446241d8ac71951ae2c37591?..." },
-  { id:"9", title:"9 · Scale_High · Aesthetic_Blended · CommEmbed_High", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_High", url:"https://momento360.com/e/u/c7e912e4f166443d9328359041d3f748?..." },
-  { id:"10", title:"10 · Scale_High · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Low", url:"https://momento360.com/e/u/eb480219ca6049e2a34dd879e7262e87?..." },
-  { id:"11", title:"11 · Scale_High · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Med", url:"https://momento360.com/e/u/1ca550b7f7804e91b49048bb51a9e001?..." },
-  { id:"12", title:"12 · Scale_High · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_High", visibility:"Vi_High", fi:"FI_High", url:"https://momento360.com/e/u/f18871496a694661b04e77a8a5a9c375?..." }
+  <!-- ✅ LABEL CHANGE (titles) -->
+  { id:"0",  title:"0 · Baseline",                                              scale:"—",         visibility:"—",      fi:"—",       url:"https://momento360.com/e/u/da4801de5f83491793e2251d91cebc11?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"1",  title:"1 · Scale_Low · Aesthetic_Blended · CommEmbed_Low",          scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/657c7111f8bb4a12a37edc1722f94fbf?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"2",  title:"2 · Scale_Low · Aesthetic_Blended · CommEmbed_Med",          scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/657336baafb745a4bbfcb1dcc13366ba?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"3",  title:"3 · Scale_Low · Aesthetic_Blended · CommEmbed_High",         scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High",url:"https://momento360.com/e/u/1adf4d6e4a0443168707f222ea158166?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"4",  title:"4 · Scale_Low · Aesthetic_Distinct · CommEmbed_Low",         scale:"Scale_Low", visibility:"Vi_High",fi:"FI_Low", url:"https://momento360.com/e/u/1aa49d2225d04fdfa3159402de5bcff7?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"5",  title:"5 · Scale_Low · Aesthetic_Distinct · CommEmbed_Med",         scale:"Scale_Low", visibility:"Vi_High",fi:"FI_Med", url:"https://momento360.com/e/u/cde18ae1e7244f77a7c251a8062beb2f?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"6",  title:"6 · Scale_Low · Aesthetic_Distinct · CommEmbed_High",        scale:"Scale_Low", visibility:"Vi_High",fi:"FI_High",url:"https://momento360.com/e/u/50bc2df44f1b430d8d5f81016b28deb6?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"7",  title:"7 · Scale_High · Aesthetic_Blended · CommEmbed_Low",         scale:"Scale_High",visibility:"Vi_Low", fi:"FI_Low", url:"https://momento360.com/e/u/f094e3a582ad4d13b155b841a5537300?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"8",  title:"8 · Scale_High · Aesthetic_Blended · CommEmbed_Med",         scale:"Scale_High",visibility:"Vi_Low", fi:"FI_Med", url:"https://momento360.com/e/u/3166a8b7446241d8ac71951ae2c37591?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"9",  title:"9 · Scale_High · Aesthetic_Blended · CommEmbed_High",        scale:"Scale_High",visibility:"Vi_Low", fi:"FI_High",url:"https://momento360.com/e/u/c7e912e4f166443d9328359041d3f748?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"10", title:"10 · Scale_High · Aesthetic_Distinct · CommEmbed_Low",       scale:"Scale_High",visibility:"Vi_High",fi:"FI_Low", url:"https://momento360.com/e/u/eb480219ca6049e2a34dd879e7262e87?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"11", title:"11 · Scale_High · Aesthetic_Distinct · CommEmbed_Med",       scale:"Scale_High",visibility:"Vi_High",fi:"FI_Med", url:"https://momento360.com/e/u/1ca550b7f7804e91b49048bb51a9e001?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" },
+  { id:"12", title:"12 · Scale_High · Aesthetic_Distinct · CommEmbed_High",      scale:"Scale_High",visibility:"Vi_High",fi:"FI_High",url:"https://momento360.com/e/u/f18871496a694661b04e77a8a5a9c375?utm_campaign=embed&utm_source=other&heading=0&pitch=0&field-of-view=75&size=medium&display-plan=true" }
 ];
 
-const state = { scale:'all', visibility:'all', fi:'all', idx:0 };
-
+const state = { scale:'all', visibility:'all', fi:'all', idx:0, autoplay:false, timer:null };
 const pano = document.getElementById('pano');
-const meta = document.getElementById('meta');
 const track = document.getElementById('track');
+const meta = document.getElementById('meta');
+const openLink = document.getElementById('openLink');
+const autoBtn = document.getElementById('autoBtn');
 
+function setGroupActive(groupEl, value){
+  groupEl.querySelectorAll('.btn').forEach(b=>b.dataset.active='false');
+  const btn=groupEl.querySelector(`.btn[data-value="${value}"]`);
+  if(btn) btn.dataset.active='true';
+}
+
+/* ✅ BUTTON CHANGE SUPPORT:
+   Since "all" buttons were removed from the groups, we need a reset that clears actives safely. */
 function clearActives(){
-  document.querySelectorAll('.btn').forEach(b=>b.dataset.active='false');
+  document.querySelectorAll('.group').forEach(g => g.querySelectorAll('.btn').forEach(b => b.dataset.active='false'));
 }
 
 function resetAll(){
   state.scale='all'; state.visibility='all'; state.fi='all';
   clearActives();
-  build();
-  goTo(0);
+  build(); goTo(0);
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-document.getElementById('baselineBtn').addEventListener('click', resetAll);
-document.getElementById('resetBtn').addEventListener('click', resetAll);
+function matches(item,key){ const want=state[key]; return want==='all' || item[key]===want; }
+function current(){ return DATA.filter(it=>matches(it,'scale') && matches(it,'visibility') && matches(it,'fi')); }
 
-function matches(item,key){
-  return state[key]==='all' || item[key]===state[key];
-}
-function current(){
-  return DATA.filter(it=>matches(it,'scale') && matches(it,'visibility') && matches(it,'fi'));
-}
-function goTo(i){
-  state.idx=i;
-  const list=current();
-  if(!list.length) return;
-  pano.src=list[i].url;
-  meta.textContent=`${i+1} / ${list.length} — ${list[i].title}`;
-}
-function build(){
-  const list=current();
+function buildTrack(list){
   track.innerHTML='';
   list.forEach((it,i)=>{
     const b=document.createElement('button');
-    b.className='pill'+(i===state.idx?' active':'');
-    b.textContent=it.id;
-    b.onclick=()=>goTo(i);
+    b.className='pill'+(i===state.idx?' active':''); b.textContent=it.id; b.title=it.title;
+    b.onclick=()=>{ stopAutoplay(); goTo(i); };
     track.appendChild(b);
   });
 }
-build();
-goTo(0);
 
+function load(url){
+  pano.classList.remove('fade');
+  pano.src = 'about:blank';
+  setTimeout(()=>{ pano.src = url; pano.classList.add('fade'); }, 50);
+}
+
+function updateHud(){
+  const list=current();
+  if(!list.length){ meta.textContent='0 / 0'; openLink.href='#'; return; }
+  meta.textContent = `${state.idx+1} / ${list.length} — ${list[state.idx].title}`;
+  openLink.href = list[state.idx].url;
+  document.querySelectorAll('.pill').forEach((el,i)=>el.classList.toggle('active', i===state.idx));
+}
+
+function goTo(i){ state.idx=i; updateHud(); const url=current()[state.idx]?.url; if(url) load(url); }
+function prev(){ const l=current(); if(!l.length) return; state.idx=(state.idx-1+l.length)%l.length; updateHud(); load(l[state.idx].url); }
+function next(){ const l=current(); if(!l.length) return; state.idx=(state.idx+1)%l.length; updateHud(); load(l[state.idx].url); }
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{ stopAutoplay(); prev(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ stopAutoplay(); next(); });
+window.addEventListener('keydown', e=>{ if(e.key==='ArrowLeft'){ stopAutoplay(); prev(); } if(e.key==='ArrowRight'){ stopAutoplay(); next(); } });
+
+document.querySelectorAll('.group').forEach(g=>{
+  g.addEventListener('click', e=>{
+    const btn=e.target.closest('.btn'); if(!btn) return;
+    setGroupActive(g, btn.dataset.value);
+    state[g.dataset.group] = btn.dataset.value;
+
+    // ✅ removed "if(all) resetAll()" because there is no per-group "all" button now
+    build(); goTo(0);
+    document.getElementById('filters').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+/* ✅ NEW: single Baseline button */
+document.getElementById('baselineBtn').addEventListener('click', resetAll);
+
+function startAutoplay(){ stopAutoplay(); state.autoplay=true; autoBtn.setAttribute('aria-pressed','true'); state.timer=setInterval(next,5000); }
+function stopAutoplay(){ state.autoplay=false; autoBtn.setAttribute('aria-pressed','false'); if(state.timer){ clearInterval(state.timer); state.timer=null; } }
+autoBtn.addEventListener('click', ()=>{ state.autoplay ? stopAutoplay() : startAutoplay(); });
+
+function build(){ const list=current(); buildTrack(list); updateHud(); }
+build(); goTo(0);
 </script>
 </body>
 </html>
