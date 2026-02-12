@@ -59,22 +59,22 @@
         <div class="groups">
           <div class="group" data-group="scale">
             <span class="label">Scale</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
+            <button class="btn" data-value="all" data-active="true">Baseline</button>
             <button class="btn" data-value="Scale_Low">Scale_Low</button>
             <button class="btn" data-value="Scale_High">Scale_High</button>
           </div>
           <div class="group" data-group="visibility">
             <span class="label">Visibility</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
-            <button class="btn" data-value="Vi_Low">Vi_Low</button>
-            <button class="btn" data-value="Vi_High">Vi_High</button>
+            <button class="btn" data-value="all" data-active="true">Baseline</button>
+            <button class="btn" data-value="Vi_Low">Aesthetic_Blended</button>
+            <button class="btn" data-value="Vi_High">Aesthetic_Distinct</button>
           </div>
           <div class="group" data-group="fi">
             <span class="label">FI</span>
-            <button class="btn" data-value="all" data-active="true">all</button>
-            <button class="btn" data-value="FI_Low">FI_Low</button>
-            <button class="btn" data-value="FI_Med">FI_Med</button>
-            <button class="btn" data-value="FI_High">FI_High</button>
+            <button class="btn" data-value="all" data-active="true">Baseline</button>
+            <button class="btn" data-value="FI_Low">CommEmbed_Low</button>
+            <button class="btn" data-value="FI_Med">CommEmbed_Med</button>
+            <button class="btn" data-value="FI_High">CommEmbed_High</button>
           </div>
         </div>
         <div class="actions"><button id="resetBtn" class="btn reset">Reset</button></div>
@@ -121,20 +121,35 @@ const URLS = {
 };
 
 const DATA = [
-  { id: "0", title: "0 · Clean base image", scale:"—", visibility:"—", fi:"—" },
-  { id: "1", title: "1 · Scale_Low · Vi_Low · FI_Low", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low" },
-  { id: "2", title: "2 · Scale_Low · Vi_Low · FI_Med", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med" },
-  { id: "3", title: "3 · Scale_Low · Vi_Low · FI_High", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High" },
-  { id: "4", title: "4 · Scale_Low · Vi_High · FI_Low", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Low" },
-  { id: "5", title: "5 · Scale_Low · Vi_High · FI_Med", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Med" },
-  { id: "6", title: "6 · Scale_Low · Vi_High · FI_High", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_High" },
-  { id: "7", title: "7 · Scale_High · Vi_Low · FI_Low", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Low" },
-  { id: "8", title: "8 · Scale_High · Vi_Low · FI_Med", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Med" },
-  { id: "9", title: "9 · Scale_High · Vi_Low · FI_High", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_High" },
-  { id: "10", title: "10 · Scale_High · Vi_High · FI_Low", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Low" },
-  { id: "11", title: "11 · Scale_High · Vi_High · FI_Med", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Med" },
-  { id: "12", title: "12 · Scale_High · Vi_High · FI_High", scale:"Scale_High", visibility:"Vi_High", fi:"FI_High" }
+
+  { id: "0", title: "0 · Baseline", scale:"—", visibility:"—", fi:"—" },
+
+  { id: "1", title: "1 · Scale_Low · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Low" },
+
+  { id: "2", title: "2 · Scale_Low · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_Med" },
+
+  { id: "3", title: "3 · Scale_Low · Aesthetic_Blended · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_Low", fi:"FI_High" },
+
+  { id: "4", title: "4 · Scale_Low · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Low" },
+
+  { id: "5", title: "5 · Scale_Low · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_Med" },
+
+  { id: "6", title: "6 · Scale_Low · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_Low", visibility:"Vi_High", fi:"FI_High" },
+
+  { id: "7", title: "7 · Scale_High · Aesthetic_Blended · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Low" },
+
+  { id: "8", title: "8 · Scale_High · Aesthetic_Blended · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_Med" },
+
+  { id: "9", title: "9 · Scale_High · Aesthetic_Blended · CommEmbed_High", scale:"Scale_High", visibility:"Vi_Low", fi:"FI_High" },
+
+  { id: "10", title: "10 · Scale_High · Aesthetic_Distinct · CommEmbed_Low", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Low" },
+
+  { id: "11", title: "11 · Scale_High · Aesthetic_Distinct · CommEmbed_Med", scale:"Scale_High", visibility:"Vi_High", fi:"FI_Med" },
+
+  { id: "12", title: "12 · Scale_High · Aesthetic_Distinct · CommEmbed_High", scale:"Scale_High", visibility:"Vi_High", fi:"FI_High" }
+
 ].map(it => ({...it, url: URLS[it.id]}));
+
 
 const state = { scale:'all', visibility:'all', fi:'all', idx:0, autoplay:false, timer:null };
 const pano = document.getElementById('pano');
