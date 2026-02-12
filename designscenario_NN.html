@@ -232,6 +232,7 @@
       });
     });
     document.getElementById('resetBtn').addEventListener('click', resetAll);
+    document.getElementById('baselineBtn').addEventListener('click', resetAll);
 
     function startAutoplay(){ stopAutoplay(); state.autoplay=true; autoBtn.setAttribute('aria-pressed','true'); state.timer=setInterval(next,5000); }
     function stopAutoplay(){ state.autoplay=false; autoBtn.setAttribute('aria-pressed','false'); if(state.timer){ clearInterval(state.timer); state.timer=null; } }
